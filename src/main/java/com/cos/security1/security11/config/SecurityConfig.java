@@ -23,7 +23,7 @@ public class SecurityConfig {
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
         http.csrf(CsrfConfigurer::disable);
         http.authorizeHttpRequests(authorize -> authorize
-                // "/user/~" 이 주소로 들어오면 인증이 필요함
+                // "/user/~" 이 주소로 들어오면 인증이 필요함 -> 인증만 되면 들어갈 수 있는 주소!
                 .requestMatchers("/user/**").authenticated()
                 // "/manager/~" 이 주소로 들어가기 위해서는 Admin과 Manager 권한이 있는 사람만 들어올 수 있음
                 .requestMatchers("/manager/**").hasAnyRole("ADMIN", "MANAGER")
@@ -36,7 +36,13 @@ public class SecurityConfig {
 
         // /user, /admin, /manager를 입력해도 로그인 페이지로 넘어감
         http.formLogin(f->f
-                .loginPage("/loginForm"));
+                .loginPage("/loginForm")
+                // /login 주소가 호출이 되면 시큐리티가 낚아채서 대신 로그인 진행
+                // -> 컨트롤러에 /login을 만들지 않아도 됨
+                .loginProcessingUrl("/login")
+                // 로그인이 완료되면 메인페이지로 이동(default), 특정페이지(/user)를 요청해서 로그인을 한 경우에는 특정페이지로 가도록 함
+                .defaultSuccessUrl("/")
+        );
 
         return http.build();
 
